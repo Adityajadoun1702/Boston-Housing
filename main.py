@@ -76,3 +76,9 @@ regressor.fit(X_train,Y_train)
 regressor.predict(X_test)
 
 plt.scatter(Y_test, Y_pred)
+
+from sklearn.metrics import r2_score, mean_absolute_error
+r2=r2_score(Y_pred,Y_test)
+mae = mean_absolute_error(Y_test, Y_pred)
+print(r2)
+print(mae)
