@@ -23,8 +23,17 @@ function updateProgress(event) {
     document.getElementById("progress-pct").innerText =
         Math.round(progress) + "%";
 }
-function submitRecord(){
+async function submitRecord(){
+    const data=Object.fromEntries(values)
 
+    const response=await fetch("/predict",{
+        method:"Post",
+        headers:{"Content-type":"application/json"},
+        body:JSON.stringify(data)
+    })
+
+    const result = await response.json(); 
+    console.log(result);
 }
 function clearForm() {
     document.querySelectorAll('input[type="number"]').forEach(input => {
