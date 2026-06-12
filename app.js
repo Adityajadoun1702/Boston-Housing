@@ -5,7 +5,7 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
         if (this.value === "") {
             values.delete(this.id);
         } else {
-            values.set(this.id, this.value);
+            values.set(this.id, parseFloat(this.value));
         }
         updateProgress();
     });
@@ -13,14 +13,15 @@ document.querySelectorAll('input[type="number"]').forEach(input => {
 
 document.querySelectorAll('input[type="radio"]').forEach(radio => {
     radio.addEventListener("change", function () {
-        values.set(this.name, this.value); // uses "chas" as key
+        values.set(this.name, parseFloat(this.value)); // uses "chas" as key
         updateProgress();
     });
 });
 
 function updateProgress() {
     const progress = (values.size / 13) * 100;
-    document.getElementById("progress-pct").innerText = Math.round(progress) + "%";
+    document.getElementById("progress-pct").innerText =Math.round(progress) + "%";
+    document.getElementById("progress-fill").style.width =progress + "%";
 }
 
 async function submitRecord() {
