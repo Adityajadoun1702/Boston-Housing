@@ -25,6 +25,10 @@ function updateProgress() {
 }
 
 async function submitRecord() {
+    if (values.size<13){
+        alert("fill all fields!");
+        return;
+    }
     const data = Object.fromEntries(values);
 
     try {
