@@ -1,31 +1,47 @@
-document.querySelectorAll("input").forEach(input => {
-    input.addEventListener("input", updateProgress);
-});
+const values = new Map();
 
+document.querySelectorAll('input[type="number"]').forEach(input => {
+    input.addEventListener("input", function () {
+        if (this.value === "") {
+            values.delete(this.id);
+        } else {
+            values.set(this.id, this.value);
+        }
+        updateProgress();
+    });
+});
 
 document.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.addEventListener("change", updateProgress);
+    radio.addEventListener("change", function () {
+        values.set(this.name, this.value); // uses "chas" as key
+        updateProgress();
+    });
 });
-let progress=0
-const values=new Map();
-function updateProgress(event) {
-    const id = event.target.id;
-    const value = event.target.value;
 
-    if (value === "") {
-        values.delete(id);
-    } else {
-        values.set(id, value);
+function updateProgress() {
+    const progress = (values.size / 13) * 100;
+    document.getElementById("progress-pct").innerText = Math.round(progress) + "%";
+}
+
+async function submitRecord() {
+    const data = Object.fromEntries(values);
+
+    try {
+        const response = await fetch("/predict", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        document.getElementById("pred-value").innerText = result.prediction.toFixed(2);
+
+    } catch (err) {
+        document.getElementById("error-banner").innerText = "Prediction failed: " + err.message;
     }
-
-    progress = (values.size / 13) * 100;
-
-    document.getElementById("progress-pct").innerText =
-        Math.round(progress) + "%";
 }
-function submitRecord(){
 
-}
 function clearForm() {
     document.querySelectorAll('input[type="number"]').forEach(input => {
         input.value = "";
@@ -34,7 +50,7 @@ function clearForm() {
         radio.checked = false;
     });
     values.clear();
-    progress = 0;
     document.getElementById("progress-pct").innerText = "0%";
-    console.log("Form Cleared");
+    document.getElementById("pred-value").innerText = "--";
+    document.getElementById("error-banner").innerText = "";
 }
