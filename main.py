@@ -1,31 +1,56 @@
+import os
 import pandas as pd
 import numpy as np
+from flask import Flask, request, jsonify, send_from_directory
 
-df=pd.read_csv('Boston.csv')
-X=df.iloc[:,1:-1].values
-Y=df.iloc[:,-1].values
+app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+df = pd.read_csv(os.path.join(BASE_DIR, 'Boston.csv'))
 
-from sklearn.model_selection import train_test_split
-X_train,X_test,Y_train,Y_test=train_test_split(X,Y,test_size=0.2,random_state=0)
+X = df.iloc[:, 1:-1].values
+Y = df.iloc[:, -1].values
 
 from sklearn.preprocessing import StandardScaler
-sc=StandardScaler()
-X_train=sc.fit_transform(X_train)
-X_test=sc.transform(X_test)
+sc = StandardScaler()
+X = sc.fit_transform(X)
 
 from sklearn.linear_model import LinearRegression
-regressor=LinearRegression()
-regressor.fit(X_train,Y_train)
+regressor = LinearRegression()
+regressor.fit(X, Y)
 
-Y_pred=regressor.predict(X_test)
+@app.route("/")
+def index():
+    return send_from_directory(BASE_DIR, "index.html")
 
-import matplotlib.pyplot as plt
-plt.scatter(Y_test, Y_pred)
-from sklearn.metrics import r2_score, mean_absolute_error
-r2=r2_score(Y_pred,Y_test)
-mae = mean_absolute_error(Y_test, Y_pred)
-print(r2)
-print(mae)
+@app.route("/app.js")
+def js():
+    return send_from_directory(BASE_DIR, "app.js")
 
+@app.route("/predict", methods=["POST"])
+def predict():
+    data = request.json
 
+    features = [[
+        float(data["crim"]),
+        float(data["zn"]),
+        float(data["indus"]),
+        float(data["chas"]),
+        float(data["nox"]),
+        float(data["rm"]),
+        float(data["age"]),
+        float(data["dis"]),
+        float(data["rad"]),
+        float(data["tax"]),
+        float(data["ptratio"]),
+        float(data["black"]),
+        float(data["lstat"])
+    ]]
 
+    features = sc.transform(features)
+
+    prediction = regressor.predict(features)[0]
+
+    return jsonify({"prediction": float(prediction)})
+
+if __name__ == "__main__":
+    app.run(debug=True)
